@@ -35,9 +35,12 @@ jobs:
           version: 'v1.29.0'
 
       # Step 5: Configure kubeconfig
+
       - name: Configure kubeconfig
         run: |
+          mkdir -p $HOME/.kube
           echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 --decode > $HOME/.kube/config
+    
 
       # Step 6: Deploy to Kubernetes
       - name: Deploy to Kubernetes

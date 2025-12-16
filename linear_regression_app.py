@@ -4,6 +4,8 @@ from sklearn.linear_model import LinearRegression
 from fastapi import FastAPI
 from pydantic import BaseModel
 
+# test change to trigger CI/CD
+
 # Create FastAPI app
 app = FastAPI()
 

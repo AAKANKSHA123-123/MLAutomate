@@ -37,13 +37,22 @@ jobs:
       # Step 5: Configure kubeconfig
 
       - name: Configure kubeconfig
+        if: ${{ secrets.KUBE_CONFIG_DATA != '' }}
         run: |
           mkdir -p $HOME/.kube
           printf "${{ secrets.KUBE_CONFIG_DATA }}" | base64 --decode > $HOME/.kube/config
-    
 
-      # Step 6: Deploy to Kubernetes
+      # Step 6: Deploy to Kubernetes (only when KUBE_CONFIG_DATA secret is provided)
       - name: Deploy to Kubernetes
+        if: ${{ secrets.KUBE_CONFIG_DATA != '' }}
         run: |
-          kubectl apply -f deployment.yaml
-          kubectl apply -f service.yaml
+          echo "Kubeconfig provided — attempting kubectl apply (using --validate=false to avoid local openapi validation issues)"
+          # show the server URL from the kubeconfig for debugging (not the credentials)
+          kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}' || true
+          kubectl apply --validate=false -f deployment.yaml
+          kubectl apply --validate=false -f service.yaml
+
+      - name: Skip Kubernetes deploy
+        if: ${{ secrets.KUBE_CONFIG_DATA == '' }}
+        run: |
+          echo "KUBE_CONFIG_DATA secret is not set — skipping Kubernetes deployment. To enable deployment, add the base64-encoded kubeconfig to repository secrets as KUBE_CONFIG_DATA."

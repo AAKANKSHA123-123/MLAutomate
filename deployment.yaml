@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: linear-regression-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: linear-regression
+  template:
+    metadata:
+      labels:
+        app: linear-regression
+    spec:
+      containers:
+      - name: linear-regression-container
+        image: aakankshason/linear-regression-app:latest
+        ports:
+        - containerPort: 8000
+

@@ -3,14 +3,14 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - main   # runs whenever you push to main
+      - main   # Trigger workflow on push to main branch
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted   # Run on self-hosted runner
 
     steps:
-      # Step 1: Checkout code
+      # Step 1: Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -28,22 +28,20 @@ jobs:
           docker build -t $IMAGE .
           docker push $IMAGE
 
-      # Step 4: Set up kubectl
-      - name: Set up Kubernetes
-        uses: azure/setup-kubectl@v3
-        with:
-          version: 'v1.29.0'
-
-      # Step 5: Configure kubeconfig
-
+      # Step 4: Configure kubeconfig (if not already configured on runner)
       - name: Configure kubeconfig
         run: |
           mkdir -p $HOME/.kube
           echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 --decode > $HOME/.kube/config
-    
 
-      # Step 6: Deploy to Kubernetes
+      # Step 5: Deploy to Kubernetes
       - name: Deploy to Kubernetes
         run: |
           kubectl apply -f deployment.yaml
           kubectl apply -f service.yaml
+
+      # Optional Step 6: Verify Deployment
+      - name: Verify Deployment
+        run: |
+          kubectl rollout status deployment/linear-regression-app
+          kubectl get pods -o wide
